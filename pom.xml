@@ -1,0 +1,134 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>spin</groupId>
+  <artifactId>spin</artifactId>
+  <packaging>jar</packaging>
+  <version>1.5</version>
+  <name>Spin</name>
+  <url>http://spin.sourceforge.net</url>
+  <description>Transparent threading solution for non-freezing Swing applications.</description>
+
+  <licenses>
+    <license>
+      <name>GNU Lesser General Public License</name>
+      <url>http://www.gnu.org/copyleft/lesser.html</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <issueManagement>
+    <system>Sourceforge</system>
+    <url>http://sourceforge.net/tracker?group_id=3636</url>
+  </issueManagement>
+  
+  <developers>
+    <developer>
+      <id>svenmeier</id>
+      <name>Sven Meier</name>
+      <email>svenmeier@users.sourceforge.net</email>
+      <roles>
+        <role>Project Manager</role>
+        <role>Architect</role>
+        <role>Developer</role>
+      </roles>
+    </developer>         
+  </developers>
+   
+  <mailingLists>
+    <mailingList>
+      <name>spin-developer</name>
+      <subscribe>spin-developer-request@lists.sourceforge.net?subject=subscribe</subscribe>
+      <unsubscribe>mailto:spin-developer-request@lists.sourceforge.net?subject=unsubscribe</unsubscribe>
+      <post>spin-developer@lists.sourceforge.net</post>
+      <archive>http://sourceforge.net/mailarchive/forum.php?forum_name=spin-developer</archive>               
+    </mailingList>
+  </mailingLists>
+   
+  <scm>
+    <connection>scm:pserver:anonymous@spin.cvs.sourceforge.net:/cvsroot/spin</connection>
+    <developerConnection>scm:extssh:spin.cvs.sourceforge.net:/cvsroot/spin</developerConnection>
+    <url>http://spin.cvs.sourceforge.net/spin/</url>
+  </scm> 
+   
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.1</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>cglib</groupId>
+      <artifactId>cglib-nodep</artifactId>
+      <version>2.1_3</version>
+      <optional>true</optional>
+    </dependency>
+  </dependencies>
+ 
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-project-info-reports-plugin</artifactId>
+        <reportSets>
+          <reportSet>
+            <reports>
+              <report>dependencies</report>
+              <report>project-team</report>
+              <report>mailing-list</report>
+              <!-- <report>cim</report> -->
+              <report>issue-tracking</report>
+              <report>license</report>
+              <report>scm</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+      </plugin>
+      <plugin>
+        <artifactId>maven-javadoc-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </reporting>
+  
+  <build>
+    <resources>
+      <resource>
+        <filtering>false</filtering>
+        <directory>src/main/java</directory>
+        <includes>
+          <include>**/*</include>
+        </includes>
+        <excludes>
+          <exclude>**/*.java</exclude>
+        </excludes>
+      </resource>
+    </resources>
+
+    <testResources>
+      <testResource>
+        <filtering>false</filtering>
+        <directory>src/test/java</directory>
+        <includes>
+          <include>**/*</include>
+        </includes>
+        <excludes>
+          <exclude>**/*.java</exclude>
+        </excludes>
+      </testResource>
+    </testResources>
+  
+    <plugins>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>1.4</source>
+          <target>1.4</target>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>   
+</project>

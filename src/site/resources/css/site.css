@@ -1,0 +1,15 @@
+*.onEDT {
+  color:#00bb00;
+}
+
+*.offEDT {
+  color:#dd0000;
+}
+
+*.centeredImage {
+  text-align:center;
+  margin-top:0px;
+  margin-bottom:0px;
+  padding:0px;
+  display:block;
+}

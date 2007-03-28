@@ -1,0 +1,90 @@
+<document>
+  <properties>
+    <author email="sven@users.sourceforge.net">Sven Meier</author>
+    <title>Spin</title>
+  </properties>
+  <body>
+    <section name="Working Thread">
+      <p>
+        One obvious solution to the problems seen in the previous section is to shift the invocation of <code>getValue()</code> from the EDT to a separate thread. When this method returns we must not propagate the result to a Swing component though. We have to return control to the EDT instead. This can be achieved via <code>SwingUtilities.invokeLater()</code> which will use our Runnable to correctly change the label's text on the EDT:
+      </p>
+
+      <table border="1" cellpadding="4" cellspacing="0" width="100%">
+        <tr valign="top">
+          <td width="50%" class="GUI">GUI</td>
+          <td width="50%" class="notGUI">BeanImpl</td>
+        </tr>
+        <tr valign="top">
+          <td>
+<pre>
+public void actionPerformed(ActionEvent e)
+{<span class="onEDT">
+  label.setText("...");
+  new Thread(new Runnable()</span>
+  {
+    public void run()
+    {<span class="offEDT">
+      final String value = bean.getValue();
+      SwingUtilities.invokeLater(new Runnable()</span>
+      {
+        public void run()
+        {
+          <span class="onEDT">label.setText(value);</span>          
+        }
+      }<span class="offEDT">);</span>
+    }
+  }<span class="onEDT">).start();</span>
+}
+
+public void propertyChange(final PropertyChangeEvent ev)
+{
+  <span class="offEDT">SwingUtilities.invokeAndWait(new Runnable()</span>
+  {
+    public void run()
+    {
+      <span class="onEDT">label.setText((String)ev.getNewValue());</span>        
+    }
+  }<span class="offEDT">);</span>
+}
+</pre>
+          </td>
+          <td>
+<pre>
+public String getValue()
+{<span class="offEDT">
+  String value;
+  
+  // extensive calculation
+  
+  return value;
+</span>}
+
+
+
+
+
+
+
+
+
+
+
+public void setValue(String value)
+{<span class="offEDT">
+  this.value = value;
+  firePropertyChange(value);
+</span>}
+</pre>
+          </td>
+        </tr>
+      </table>
+      <p>
+        Now what happens if the bean informs the GUI about a value-change triggered by another thread? In <code>propertyChange()</code> we pass a runnable to the EDT via <code>SwingUtiltites.invokeAndWait()</code> that can safely alter the label.
+      </p>
+      <p>
+        Let's take a look at the colors once again: On the right there is only <span class="offEDT">red</span> - so we achieved a  non freezing GUI. The left column is <span class="onEDT">almost totally green</span>. Since we  restrict changes to Swing components to these <span class="onEDT">green</span> rows we are honouring the Swing threading rule too.<br/>
+        But the <span class="offEDT">red</span> rows on the left make things difficult: The programmer of the GUI always has to know which thread is stepping through what part of the code - without any visual help of thread-coloring. Any mistake reintroduces the problems mentioned above.
+      </p>
+    </section>
+  </body>
+</document>

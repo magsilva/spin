@@ -1,0 +1,99 @@
+<document>
+  <properties>
+    <author email="sven@users.sourceforge.net">Sven Meier</author>
+    <title>Spin</title>
+  </properties>
+  <body>
+    <section name="Spin">
+      <p>
+        Now let's take a look at the <em>Spin</em> solution. The following table shows the code:
+      </p>
+      <table border="1" cellpadding="4" cellspacing="0" width="100%">
+        <tr valign="top">
+          <td>GUI</td>
+          <td>BeanImpl</td>
+        </tr>
+        <tr valign="top">
+          <td>
+<pre>
+public void actionPerformed(ActionEvent e)
+{<span class="onEDT">
+  label.setText("...");
+  label.setText(bean.getValue());
+</span>}
+
+
+
+
+public void propertyChange(PropertyChangeEvent ev)
+{
+  <span class="onEDT">label.setText((String)ev.getNewValue());</span>
+}
+</pre>
+          </td>
+          <td>
+<pre>
+public String getValue()
+{<span class="offEDT">
+  String value;
+
+  // extensive calculation
+  
+  return value;
+</span>}
+
+public void setValue(String value)
+{<span class="offEDT">
+  this.value = value;
+  firePropertyChange(value);
+</span>}
+</pre>
+          </td>
+        </tr>
+      </table>
+      <p>
+        Hey wait a minute! It's the same code as shown in the <a href="standard.html">standard table</a>. But the colors have changed - the GUI is completely <span class="onEDT">green</span> and the bean is <span class="red">red</span> - how can this be?
+      </p>
+      <p>
+        <em>Spin</em> makes this solution possible - as you can see with no impact on the old code. An invisible column in the middle handles all threading issues transparently.<br/>
+        All we have to do is to <em>spin-off</em> the bean from the EDT. For this we wrap the bean in an instance of type <code>Spin</code>. The result can safely be casted to any interface the bean (or one of its superclasses) implements. The best place to do this is before a reference to this bean is passed to a GUI component (why bother the programmer of the GUI with this little detail):
+      </p>
+<pre>
+  bean = (Bean)Spin.off(bean);
+</pre>
+      <p>   
+        The only restriction here is that the Bean has to be broken into interface and implementation. The GUI components will only use the interface! The following picture shows how <em>Spin</em> connects the GUI and the bean. Calls on the EDT from the GUI to the bean are brokered to other threads invocating the beans functionality:
+        
+        <span class="centeredImage">  
+          <img src="images/spinoff.gif" alt="Spin off"/>
+        </span>
+      </p>
+      <p>
+        The need for an interface isn't really a restriction:
+        <ul>
+          <li>
+            It is generally recommended to separate an application in different layers which communicate through well defined interfaces. The GUI of an application is certainly part of another layer than extensive calculations or I/O operations.
+          </li>
+          <li>
+            If you don't want to or are unable to use an interface you can <a href="internals.html#Utilizing CGLib">utilize CGLib instead of JDK proxies</a>.
+          </li>
+        </ul>
+      </p>
+      <p>
+        For the notification of changes to the bean we use an inverse technique.<br/>
+        We must <em>spin-over</em> any invocation of a GUI callback-method on another thread to the EDT. This time we wrap the GUI in a <code>Spin</code> instance assuming that the bean allows for an <code>PropertyChangeListener</code> to be added as a callback (this could be any interface like foo.DataChangedListener):
+      </p>
+<pre>
+  bean.addPropertyChangeListener((PropertyChangeListener)Spin.over(gui);
+</pre>
+      <p>  
+        <span class="centeredImage">  
+          <img src="images/spinover.gif" alt="Spin over"/>
+        </span>
+      </p>
+      <p>
+        This is all you have to know to get <em>Spin</em> to work in your project. If you're interested in the internals of <em>Spin</em> go on to the next section.
+      </p>
+    </section>
+  </body>
+</document>
