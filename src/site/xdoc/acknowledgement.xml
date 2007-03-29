@@ -1,0 +1,66 @@
+<document>
+  <properties>
+    <author email="sven@users.sourceforge.net">Sven Meier</author>
+    <title>Spin</title>
+  </properties>
+  <body>
+    <section name="Acknowledgment">
+    <subsection name="CGLib">
+      <p>
+        Starting with release 1.4 Spin isn't any longer restricted on using JDK virtual proxies. The creation of proxies is now encapsulated in the interface  <a href="./apidocs/spin/ProxyFactory.html">ProxyFactory</a>.
+      </p>
+      <p>
+    	<em>Spin</em> contains a <a href="http://cglib.sourceforge.net">CGLib</a> specific implementation <a href="./apidocs/spin/CGLibProxyFactory.html">CGLibProxyFactory</a> that offers the following benefits:
+        <ul>
+          <li>
+            improved performance on interception of method invocations
+          </li>
+          <li>
+            no need to to use interfaces for your beans as required by JDK proxies
+          </li>
+        </ul>
+        For this you just have to change the default factory of proxies:
+      </p>
+<pre>
+  Spin.setDefaultProxyFactory(new CGLibProxyFactory());
+</pre>
+	</subsection>
+      <subsection name="Foxtrot"> 
+        <p>
+          The <em>Spin</em> project is influenced by the  <a href="http://foxtrot.sourceforge.net">Foxtrot</a> project. Foxtrot is the inventor of the <b>Synchronous Model</b> (<em>Spin</em> has adopted this technique) but uses an API that is similar to <code>SwingWorker</code>. It offers a subset of <em>Spin</em>s features - it lacks transparent exception handling and offers no solution for asynchronous callbacks:
+        </p>
+<pre>
+public void actionPerformed(ActionEvent e)
+{<span class="onEDT">
+  label.setText("...");
+  String text = (String)Worker.post(new Job()</span>
+  {
+    public Object run()
+    {
+      <span class="offEDT">return bean.getValue();</span>
+    }
+  }<span class="onEDT">);
+  label.setText(text);</span>
+}
+</pre>
+        <p>
+          The following code shows how Foxtrot can be 'simulated' with <em>Spin</em> (if you insist on restricting yourself to only one generic interface named <code>Job</code> or what-ever-you-like):
+        </p>
+<pre>
+public void actionPerformed(ActionEvent e)
+{<span class="onEDT">
+  label.setText("...");
+  String text = ((Job)Spin.off(new Job()</span>
+  {
+    public String run()
+    {
+      <span class="offEDT">return bean.getValue();</span>
+    }
+  }<span class="onEDT">)).run();
+  label.setText(text);</span>
+}
+</pre>
+      </subsection>
+    </section>
+  </body>
+</document>

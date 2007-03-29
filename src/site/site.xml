@@ -8,12 +8,9 @@
   <body>
     <menu name="About">
       <item name="Overview" href="/index.html"/>
-      <item name="Standard Swing" href="/standard.html"/>
-      <item name="Working Thread" href="/workingthread.html"/>
-      <item name="Swingworker" href="/swingworker.html"/>
-      <item name="Spin" href="/spin.html"/>
-      <item name="Internals" href="/internals.html"/>
-      <item name="Conclusion" href="/conclusion.html"/>
+      <item name="The problem" href="/problem.html"/>
+      <item name="A solution" href="/solution.html"/>
+      <item name="Acknowledgement" href="/acknowledgement.html"/>
     </menu>
     
     ${reports}
