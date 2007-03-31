@@ -1,20 +1,20 @@
 <document>
   <properties>
     <author email="sven@users.sourceforge.net">Sven Meier</author>
-    <title>Spin</title>
+    <title>Spin your Swing</title>
   </properties>
   <body>
     <section name="Overview">
       <blockquote>
-        <cite>Spin is a transparent threading solution for non-freezing Swing applications.</cite>
+        <cite><em>Spin</em> is a transparent threading solution for non-freezing Swing applications.</cite>
       </blockquote>
       
       <p>
         Swing is the standard component architecture for developing Java desktop applications. Its exhaustive collection of widgets is the foundation for easy development of rich graphical user interfaces (GUI).<br />
-        Alas every non trivial GUI sooner or later encounters the problem of "freeze". This annoying behaviour is experienced by users every time the application performs extensive calculations or blocks for network or disk I/O.
+        Alas every non trivial <acronym title="Graphical user interface">GUI</acronym> sooner or later encounters the problem of "freeze". This annoying behaviour is experienced by users every time the application performs extensive calculations or blocks for network or disk I/O.
       </p>
       <p>
-        In this document we will explain the reason for this problem and explore different techniques to prevent Swing GUIs from "freezing". We will present our project named <em>Spin</em> which offers a - to our knowledge - revolutionary new approach. It offers transparent thread handling with minimal impact on your application code.
+        We will explain the reason for this <a href="problem.html">problem</a> and explore different techniques to prevent Swing <acronym title="Graphical user interface">GUI</acronym>s from "freezing". We will present our project named <em>Spin</em> which offers a - to our knowledge - revolutionary new approach. It offers a solution for transparent thread handling with minimal impact on your application code.
       </p>
     </section>
   </body>

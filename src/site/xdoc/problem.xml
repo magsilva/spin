@@ -1,241 +1,339 @@
 <document>
   <properties>
     <author email="sven@users.sourceforge.net">Sven Meier</author>
-    <title>Spin</title>
+    <title>Spin your Swing</title>
   </properties>
   <body>
   <section name="The Problem">
     <subsection name="Standard Swing">
       <p>
-        In this section we take a look at a naive GUI implementation that shows how Swing freezes in case the application programmer doesn't take any special actions against it. We also describe the problem of calls into Swing components triggered by any other thread than the event dispatch thread. <br/>
-        Swing is not designed for multi threading, so let us first recall the single  threading rule of every Swing GUI:
+        In this section we take a look at a naive <acronym title="Graphical user interface">GUI</acronym> implementation that shows how Swing freezes in case the application programmer doesn't take any special actions against it. We also describe the problem of calls into Swing components triggered by any other thread than the event dispatch thread (EDT). <br/>
+        Swing is not designed for multi threading, so let us first recall the single  threading rule of every Swing <acronym title="Graphical user interface">GUI</acronym>:
       </p>
       <blockquote>
         <cite>Access to a (visible) Swing component has to occur in the event dispatch thread.</cite>
       </blockquote>
       <p>
-        The event dispatch thread (short EDT) is responsible to process all GUI related events, e.g. notifying listeners of user input, repainting dirty regions or updated areas. All these events are enqueued and treated sequentially - if one of them takes a long time to be processed, all further events will have to wait.
+        The <acronym title="Event Dispatch Thread">EDT</acronym> is responsible to process all <acronym title="Graphical user interface">GUI</acronym> related events, e.g. notifying listeners of user input, repainting dirty regions or updated areas. All these events are enqueued and treated sequentially - if one of them takes a long time to be processed, all further events will have to wait.
       </p>
       <p>
-        In the tables throughout this document the left column represents a Swing GUI component, the right column represents a non visual multithreaded bean that encapsulates extensive calculations. Code run on the EDT is <span class="onEDT">shown in green</span> and code called by any other thread is <span class="offEDT">shown in red</span>.
+        Throughout the next sections we'll put the code of a Swing <acronym title="Graphical user interface">GUI</acronym> component and a non visual bean side by side. The bean encapsulates an extensive calculation that is used by multiple threads. Code run on the <acronym title="Event Dispatch Thread">EDT</acronym> is <span class="onEDT">shown in green</span> and code called by any other thread is <span class="offEDT">shown in red</span>.
       </p>
       <p>
-        As you can see in the upper half of the following table, the GUI calls the method <code>getValue()</code> on the bean when an action is performed. The event dispatch thread is routed from the GUI to the bean. While it is performing its calculations no further swing events can be processed - the GUI freezes.<br/>
+        As you can see in the following code, <code>GUI.java</code> calls the method <code>getValue()</code> on the bean when an action is performed. The <acronym title="Event Dispatch Thread">EDT</acronym> is routed from the <acronym title="Graphical user interface">GUI</acronym> to the bean. While it is performing its calculations no further swing events can be processed - the <acronym title="Graphical user interface">GUI</acronym> freezes.<br/>
         One of these queued events is the repaint of the label triggered by <code>label.setText("...")</code>. When <code>getValue()</code> returns, the text of the label is changed again before the previous text was painted. So in fact <code>"..."</code> is never seen:
       </p>
-      <table border="1" cellpadding="4" cellspacing="0" width="100%">
-        <tr valign="top">
-          <td width="50%" class="GUI">GUI</td>
-          <td width="50%" class="notGUI">BeanImpl</td>
-        </tr>
-        <tr valign="top">
-          <td>
-<pre>
+
+<!--
 public void actionPerformed(ActionEvent e)
-{<span class="onEDT">
+{
   label.setText("...");
   label.setText(bean.getValue());
-</span>}
-
-
-
+}
 
 public void propertyChange(PropertyChangeEvent ev)
-{<span class="offEDT">
+{
   label.setText((String)ev.getNewValue());
-</span>}
-</pre>
-          </td>
-          <td>
-<pre>
-public String getValue()
-{<span class="onEDT">
-  String value;
-  
-  // extensive calculation
+}
+-->
+<div class="java left">
+<h3 class="java">GUI.java</h3>
+<code class="java"><span class="java4">public </span><span class="java9">void </span><span class="java10">actionPerformed</span><span class="java8">(</span><span class="java10">ActionEvent e</span><span class="java8">)<br />
+{<br />
+</span><span class="onEDT">&#xA0; <span class="java10">label.setText</span><span class="java8">(</span><span class="java5">&#34;...&#34;</span><span class="java8">)</span><span class="java10">;<br />
+&#xA0; label.setText</span><span class="java8">(</span><span class="java10">bean.getValue</span><span class="java8">())</span><span class="java10">;<br />
+</span></span><span class="java8">}<br />
+<br />
+<br />
+</span><span class="java4">public </span><span class="java9">void </span><span class="java10">propertyChange</span><span class="java8">(</span><span class="java10">PropertyChangeEvent ev</span><span class="java8">)<br />
+{<br />
+</span><span class="offEDT">&#xA0; <span class="java10">label.setText</span><span class="java8">((</span><span class="java10">String</span><span class="java8">)</span><span class="java10">ev.getNewValue</span><span class="java8">())</span><span class="java10">;<br />
+</span></span><span class="java8">}</span>
+<br />&#xA0;</code></div>
 
+<!--
+public String getValue()
+{
+  String value;
+  // extensive calculation
   return value;
-</span>}
+}
 
 public void setValue(String value)
-{<span class="offEDT">
+{
   this.value = value;
   firePropertyChange(value);
-</span>}
-</pre>
-          </td>
-        </tr>
-      </table>
+}
+-->
+<div class="java right">
+<h3 class="java">BeanImpl.java</h3>
+<code class="java"><span class="java4">public </span><span class="java10">String getValue</span><span class="java8">()<br />
+{<br />
+</span><span class="onEDT">&#xA0; <span class="java10">String value;<br />
+&#xA0; </span><span class="java3">// extensive calculation<br />
+&#xA0; </span><span class="java4">return </span><span class="java10">value;<br />
+</span></span><span class="java8">}<br />
+<br />
+</span><span class="java4">public </span><span class="java9">void </span><span class="java10">setValue</span><span class="java8">(</span><span class="java10">String value</span><span class="java8">)<br />
+{<br />
+</span><span class="offEDT">&#xA0; <span class="java4">this</span><span class="java10">.value = value;<br />
+&#xA0; firePropertyChange</span><span class="java8">(</span><span class="java10">value</span><span class="java8">)</span><span class="java10">;<br />
+</span></span><span class="java8">}</span></code></div>
+
+<div class="clear"/>
+
       <p>
-        The lower half of the table shows what happens if <code>setValue()</code> is invoked on the bean on another thread. The listeners are notified (GUI implements <code>java.beans.PropertyChangeListener</code> and is registered as a listener for changes of the bean), triggering a call to <code>propertyChange()</code> on the GUI. The text of the label is altered on the calling thread, violating the Swing threading rule.
+        What happens if <code>setValue()</code> is invoked on the bean on another thread. The listeners are notified (the class <code>GUI</code> implements <code>java.beans.PropertyChangeListener</code> and is registered as a listener for changes of the bean), triggering a call to <code>propertyChange()</code> on the <acronym title="Graphical user interface">GUI</acronym>. The text of the label is altered on the calling thread, violating the Swing threading rule.
       </p>
       <p>
         The color distribution gives a hint where to search for problems of this implementation:<br/>
-        <span class="onEDT">Green</span> rows of code in the right column result in a GUI freeze, <span class="offEDT">red</span> rows in left column show a violation to the Swing threading rule.
+        <span class="onEDT">Green lines</span> of code in <code>BeanImpl.java</code> result in a <acronym title="Graphical user interface">GUI</acronym> freeze, <span class="offEDT">red lines</span> in <code>GUI.java</code> show a violation to the Swing threading rule.
       </p>
     </subsection>
     <subsection name="Working Thread">
       <p>
-        One obvious solution to the problems seen in the previous section is to shift the invocation of <code>getValue()</code> from the EDT to a separate thread. When this method returns we must not propagate the result to a Swing component though. We have to return control to the EDT instead. This can be achieved via <code>SwingUtilities.invokeLater()</code> which will use our Runnable to correctly change the label's text on the EDT:
+        One obvious solution to the problems seen in the previous section is to shift the invocation of <code>getValue()</code> from the <acronym title="Event Dispatch Thread">EDT</acronym> to a separate thread. When this method returns we must not propagate the result to a Swing component though. We have to return control to the <acronym title="Event Dispatch Thread">EDT</acronym> instead. This can be achieved via <code>SwingUtilities.invokeLater()</code> which will use our Runnable to correctly change the label's text on the <acronym title="Event Dispatch Thread">EDT</acronym>:
       </p>
 
-      <table border="1" cellpadding="4" cellspacing="0" width="100%">
-        <tr valign="top">
-          <td width="50%" class="GUI">GUI</td>
-          <td width="50%" class="notGUI">BeanImpl</td>
-        </tr>
-        <tr valign="top">
-          <td>
-<pre>
+<!--
 public void actionPerformed(ActionEvent e)
-{<span class="onEDT">
+{
   label.setText("...");
-  new Thread(new Runnable()</span>
+  new Thread(new Runnable()
   {
     public void run()
-    {<span class="offEDT">
+    {
       final String value = bean.getValue();
-      SwingUtilities.invokeLater(new Runnable()</span>
+      SwingUtilities.invokeLater(new Runnable()
       {
         public void run()
         {
-          <span class="onEDT">label.setText(value);</span>          
+          label.setText(value);          
         }
-      }<span class="offEDT">);</span>
+      });
     }
-  }<span class="onEDT">).start();</span>
+  }).start();
 }
 
 public void propertyChange(final PropertyChangeEvent ev)
 {
-  <span class="offEDT">SwingUtilities.invokeAndWait(new Runnable()</span>
+  SwingUtilities.invokeLater(new Runnable()
   {
     public void run()
     {
-      <span class="onEDT">label.setText((String)ev.getNewValue());</span>        
+      label.setText((String)ev.getNewValue());        
     }
-  }<span class="offEDT">);</span>
+  });
 }
-</pre>
-          </td>
-          <td>
-<pre>
+-->
+<div class="java left">
+<h3 class="java">GUI.java</h3>
+<code class="java"><span class="java4">public </span><span class="java9">void </span><span class="java10">actionPerformed</span><span class="java8">(</span><span class="java10">ActionEvent e</span><span class="java8">)<br />
+{<br />
+</span><span class="onEDT">&#xA0; <span class="java10">label.setText</span><span class="java8">(</span><span class="java5">&#34;...&#34;</span><span class="java8">)</span><span class="java10">;<br />
+&#xA0; </span><span class="java4">new </span><span class="java10">Thread</span><span class="java8">(</span><span class="java4">new </span><span class="java10">Runnable</span><span class="java8">()<br />
+&#xA0; {<br /></span></span>
+&#xA0;&#xA0;&#xA0; <span class="java4">public </span><span class="java9">void </span><span class="java10">run</span><span class="java8">()<br />
+&#xA0;&#xA0;&#xA0; {</span><br />
+<span class="offEDT">&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; <span class="java4">final </span><span class="java10">String value = bean.getValue</span><span class="java8">()</span><span class="java10">;<br />
+&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; SwingUtilities.invokeLater</span><span class="java8">(</span><span class="java4">new </span><span class="java10">Runnable</span><span class="java8">()<br />
+&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; {</span></span><br />
+&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; <span class="java4">public </span><span class="java9">void </span><span class="java10">run</span><span class="java8">()<br />
+&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; {</span><br />
+<span class="onEDT">&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; <span class="java10">label.setText</span><span class="java8">(</span><span class="java10">value</span><span class="java8">)</span><span class="java10">;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;</span></span><br />
+&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; <span class="java8">}</span><br />
+<span class="offEDT">&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; <span class="java8">})</span><span class="java10">;</span></span><br />
+&#xA0;&#xA0;&#xA0; <span class="java8">}<br /></span>
+<span class="onEDT">&#xA0; <span class="java8">}})</span><span class="java10">.start</span><span class="java8">()</span><span class="java10">;<br />
+</span></span><span class="java8">}<br />
+<br />
+</span><span class="java4">public </span><span class="java9">void </span><span class="java10">propertyChange</span><span class="java8">(</span><span class="java4">final </span><span class="java10">PropertyChangeEvent ev</span><span class="java8">)<br />
+{<br />
+</span><span class="offEDT">&#xA0; <span class="java10">SwingUtilities.invokeLater</span><span class="java8">(</span><span class="java4">new </span><span class="java10">Runnable</span><span class="java8">()<br />
+&#xA0; {<br /></span></span>
+&#xA0;&#xA0;&#xA0; <span class="java4">public </span><span class="java9">void </span><span class="java10">run</span><span class="java8">()<br />
+&#xA0;&#xA0;&#xA0; {</span><br />
+<span class="onEDT">&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; <span class="java10">label.setText</span><span class="java8">((</span><span class="java10">String</span><span class="java8">)</span><span class="java10">ev.getNewValue</span><span class="java8">())</span><span class="java10">;</span></span><br />
+&#xA0;&#xA0;&#xA0; <span class="java8">}</span><br />
+<span class="offEDT">&#xA0; <span class="java8">})</span><span class="java10">;</span></span><br />
+<span class="java8">}</span></code></div>
+
+<!--
 public String getValue()
-{<span class="offEDT">
+{
   String value;
-  
   // extensive calculation
-  
   return value;
-</span>}
-
-
-
-
-
-
-
-
-
-
+}
 
 public void setValue(String value)
-{<span class="offEDT">
+{
   this.value = value;
   firePropertyChange(value);
-</span>}
-</pre>
-          </td>
-        </tr>
-      </table>
+}
+-->
+<div class="java right">
+<h3 class="java">BeanImpl.java</h3>
+<code class="java"><span class="java4">public </span><span class="java10">String getValue</span><span class="java8">()<br />
+{</span><br />
+<span class="offEDT">&#xA0; <span class="java10">String value;<br />
+&#xA0; </span><span class="java3">// extensive calculation<br />
+&#xA0; </span><span class="java4">return </span><span class="java10">value;</span></span><br />
+<span class="java8">}<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+</span><span class="java4">public </span><span class="java9">void </span><span class="java10">setValue</span><span class="java8">(</span><span class="java10">String value</span><span class="java8">)<br />
+{</span><br />
+<span class="offEDT">&#xA0; <span class="java4">this</span><span class="java10">.value = value;<br />
+&#xA0; firePropertyChange</span><span class="java8">(</span><span class="java10">value</span><span class="java8">)</span><span class="java10">;</span></span><br />
+<span class="java8">}</span>
+<br />
+<br />
+<br />
+<br />
+<br />
+&#xA0;</code></div>
+
+<div class="clear"/>
+
       <p>
-        Now what happens if the bean informs the GUI about a value-change triggered by another thread? In <code>propertyChange()</code> we pass a runnable to the EDT via <code>SwingUtiltites.invokeAndWait()</code> that can safely alter the label.
+        Now what happens if the bean informs the <acronym title="Graphical user interface">GUI</acronym> about a value-change triggered by another thread? In <code>propertyChange()</code> we pass a runnable to the <acronym title="Event Dispatch Thread">EDT</acronym> via <code>SwingUtiltites.invokeLater()</code> that can safely alter the label.
       </p>
       <p>
-        Let's take a look at the colors once again: On the right there is only <span class="offEDT">red</span> - so we achieved a  non freezing GUI. The left column is <span class="onEDT">almost totally green</span>. Since we  restrict changes to Swing components to these <span class="onEDT">green</span> rows we are honouring the Swing threading rule too.<br/>
-        But the <span class="offEDT">red</span> rows on the left make things difficult: The programmer of the GUI always has to know which thread is stepping through what part of the code - without any visual help of thread-coloring. Any mistake reintroduces the problems mentioned above.
+        Let's take a look at the colors once again: In <code>BeanImpl.java</code> there are only <span class="offEDT">red lines</span> - so we achieved a non freezing <acronym title="Graphical user interface">GUI</acronym>. <code>GUI.java</code> has <span class="onEDT">almost all lines in green</span>. Since we restrict changes to Swing components to these <span class="onEDT">green lines</span> we are honouring the Swing threading rule too.<br/>
+        But the <span class="offEDT">red lines </span> in <code>GUI.java</code> make things difficult: The programmer of this class always has to know which thread is stepping through what part of the code - without any visual help of thread-coloring. Any mistake reintroduces the problems mentioned above.
       </p>
     </subsection>
     <subsection name="Swingworker">
       <p>
-        SwingWorker is a utility class that aims to ease the efforts to write a non-freezing GUI. Although not included in the standard Java distribution it is maintained by the Swing team and downloadable at <a href="http://www.theswingconnection.com">The Swing Connection</a>.
+        SwingWorker is a utility class that aims to ease the efforts to write a non-freezing <acronym title="Graphical user interface">GUI</acronym>. Although not included in the standard Java distribution it is maintained by the Swing team and downloadable at <a href="http://www.theswingconnection.com">The Swing Connection</a>.
       </p>
       <p>
-        As you can see in the following table a SwingWorker removes some of the visual clutter seen in the previous section. To use it you have to subclass it, placing extensive calculations into method <code>construct()</code>. In <code>finished()</code> you can alter the label because this method is called on the EDT. This is similar to our previous solution but this time the threading is handled by the superclass:
+        As you can see in the following example a SwingWorker removes some of the visual clutter seen in the previous section. To use it you have to subclass it, placing extensive calculations into method <code>construct()</code>. In <code>finished()</code> you can alter the label because this method is called on the <acronym title="Event Dispatch Thread">EDT</acronym>. This is similar to our previous solution but this time the threading is handled by the superclass:
       </p>
-      <table border="1" cellpadding="4" cellspacing="0" width="100%">
-        <tr valign="top">
-          <td width="50%" class="GUI">GUI</td>
-          <td width="50%" class="notGUI">BeanImpl</td>
-        </tr>
-        <tr valign="top">
-          <td>
-<pre>
+      
+<!--      
 public void actionPerformed(ActionEvent e)
-{<span class="onEDT">
+{
   label.setText("...");
-  new SwingWorker()</span>
+  new SwingWorker()
   {
     public Object construct()
     {
-      <span class="offEDT">return bean.getValue();</span>
+      return bean.getValue();
     }
 
     public void finished()
     {
-      <span class="onEDT">label.setText((String)getValue());</span>
+      label.setText((String)getValue());
     }
-  }<span class="onEDT">).start();</span>
+  }).start();
 }
-
 
 public void propertyChange(final PropertyChangeEvent ev)
 {
-  <span class="offEDT">SwingUtilities.invokeAndWait(new Runnable()</span>
+  SwingUtilities.invokeLater(new Runnable()
   {
     public void run()
     {
-      <span class="onEDT">label.setText((String)ev.getNewValue());</span>        
+      label.setText((String)ev.getNewValue());        
     }
-  }<span class="offEDT">);</span>
+  });
 }
-</pre>
-          </td>
-          <td>
-<pre>
+-->
+<div class="java left">
+<h3 class="java">GUI.java</h3>
+<code class="java"><span class="java4">public </span><span class="java9">void </span><span class="java10">actionPerformed</span><span class="java8">(</span><span class="java10">ActionEvent e</span><span class="java8">)<br />
+{</span><br />
+<span class="onEDT">&#xA0; <span class="java10">label.setText</span><span class="java8">(</span><span class="java5">&#34;...&#34;</span><span class="java8">)</span><span class="java10">;<br />
+&#xA0; </span><span class="java4">new </span><span class="java10">SwingWorker</span><span class="java8">()<br />
+&#xA0; {</span></span><br />
+&#xA0;&#xA0;&#xA0; <span class="java4">public </span><span class="java10">Object construct</span><span class="java8">()<br />
+&#xA0;&#xA0;&#xA0; {</span><br />
+<span class="offEDT">&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; <span class="java4">return </span><span class="java10">bean.getValue</span><span class="java8">()</span><span class="java10">;</span></span><br />
+&#xA0;&#xA0;&#xA0; <span class="java8">}<br />
+<br />
+&#xA0;&#xA0;&#xA0; </span><span class="java4">public </span><span class="java9">void </span><span class="java10">finished</span><span class="java8">()<br />
+&#xA0;&#xA0;&#xA0; {</span><br />
+<span class="onEDT">&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; <span class="java10">label.setText</span><span class="java8">((</span><span class="java10">String</span><span class="java8">)</span><span class="java10">getValue</span><span class="java8">())</span><span class="java10">;</span></span><br />
+&#xA0;&#xA0;&#xA0; <span class="java8">}</span><br />
+<span class="onEDT">&#xA0; <span class="java8">})</span><span class="java10">.start</span><span class="java8">()</span><span class="java10">;</span></span><br />
+<span class="java8">}<br />
+<br />
+</span><span class="java4">public </span><span class="java9">void </span><span class="java10">propertyChange</span><span class="java8">(</span><span class="java4">final </span><span class="java10">PropertyChangeEvent ev</span><span class="java8">)<br />
+{<br />
+</span><span class="offEDT">&#xA0; <span class="java10">SwingUtilities.invokeLater</span><span class="java8">(</span><span class="java4">new </span><span class="java10">Runnable</span><span class="java8">()<br />
+&#xA0; {<br /></span></span>
+&#xA0;&#xA0;&#xA0; <span class="java4">public </span><span class="java9">void </span><span class="java10">run</span><span class="java8">()<br />
+&#xA0;&#xA0;&#xA0; {</span><br />
+<span class="onEDT">&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; <span class="java10">label.setText</span><span class="java8">((</span><span class="java10">String</span><span class="java8">)</span><span class="java10">ev.getNewValue</span><span class="java8">())</span><span class="java10">;</span></span><br />
+&#xA0;&#xA0;&#xA0; <span class="java8">}</span><br />
+<span class="offEDT">&#xA0; <span class="java8">})</span><span class="java10">;</span></span><br />
+<span class="java8">}</span></code></div>
+
+<!--
 public String getValue()
-{<span class="offEDT">
-  String value;
-  
+{
+  String value; 
   // extensive calculation
-  
   return value;
-</span>}
-
-
-
-
-
-
-
-
-
+}
 
 public void setValue(String value)
-{<span class="offEDT">
+{
   this.value = value;
   firePropertyChange(value);
-</span>}
-</pre>
-          </td>
-        </tr>
-      </table>
+}
+-->
+<div class="java right">
+<h3 class="java">BeanImpl.java</h3>
+<code class="java"><span class="java4">public </span><span class="java10">String getValue</span><span class="java8">()<br />
+{</span><br />
+<span class="offEDT">&#xA0; <span class="java10">String value;<br />
+&#xA0; </span><span class="java3">// extensive calculation<br />
+&#xA0; </span><span class="java4">return </span><span class="java10">value;</span></span><br />
+<span class="java8">}<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+</span><span class="java4">public </span><span class="java9">void </span><span class="java10">setValue</span><span class="java8">(</span><span class="java10">String value</span><span class="java8">)<br />
+{</span><br />
+<span class="offEDT">&#xA0; <span class="java4">this</span><span class="java10">.value = value;<br />
+&#xA0; firePropertyChange</span><span class="java8">(</span><span class="java10">value</span><span class="java8">)</span><span class="java10">;</span></span><br />
+<span class="java8">}
+<br />
+<br />
+<br />
+<br />
+<br />&#xA0;</span></code></div>
+
+<div class="clear"/>
+
       <p>
         The SwingWorker offers no support for our notification problem so we stick to our previous solution in <code>propertyChange()</code>.
       </p>
       <p>
         What about the colors?<br/>
-        The situation hasn't really improved. The indentation of code was minimized but the <span class="offEDT">red</span> and <span class="onEDT">green</span> colors in the GUI stay the same. So the problem above isn't resolved yet.
+        The situation hasn't really improved. The indentation of code was minimized but we still have <span class="offEDT">red lines</span> in <code>GUI.java</code>. So the problem above isn't resolved yet, we're still seeking a better <a href="solution.html">solution</a>.
       </p>
     </subsection>
   </section>

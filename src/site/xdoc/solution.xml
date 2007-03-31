@@ -1,69 +1,85 @@
 <document>
   <properties>
     <author email="sven@users.sourceforge.net">Sven Meier</author>
-    <title>Spin</title>
+    <title>Spin your Swing</title>
   </properties>
   <body>
   <section name="Solution">
     <subsection name="Spin">
       <p>
-        Now let's take a look at the <em>Spin</em> solution. The following table shows the code:
+        Now let's take a look at the <em>Spin</em> solution. Here's the code:
       </p>
-      <table border="1" cellpadding="4" cellspacing="0" width="100%">
-        <tr valign="top">
-          <td>GUI</td>
-          <td>BeanImpl</td>
-        </tr>
-        <tr valign="top">
-          <td>
-<pre>
+      
+<!--
 public void actionPerformed(ActionEvent e)
-{<span class="onEDT">
+{
   label.setText("...");
   label.setText(bean.getValue());
-</span>}
-
-
-
+}
 
 public void propertyChange(PropertyChangeEvent ev)
 {
-  <span class="onEDT">label.setText((String)ev.getNewValue());</span>
+  label.setText((String)ev.getNewValue());
 }
-</pre>
-          </td>
-          <td>
-<pre>
-public String getValue()
-{<span class="offEDT">
-  String value;
+-->
+<div class="java left">
+<h3 class="java">GUI.java</h3>
+<code class="java"><span class="java4">public </span><span class="java9">void </span><span class="java10">actionPerformed</span><span class="java8">(</span><span class="java10">ActionEvent e</span><span class="java8">)<br />
+{</span><br />
+<span class="onEDT">&#xA0; <span class="java10">label.setText</span><span class="java8">(</span><span class="java5">&#34;...&#34;</span><span class="java8">)</span><span class="java10">;<br />
+&#xA0; label.setText</span><span class="java8">(</span><span class="java10">bean.getValue</span><span class="java8">())</span><span class="java10">;</span></span><br />
+<span class="java8">}<br />
+<br />
+<br />
+</span><span class="java4">public </span><span class="java9">void </span><span class="java10">propertyChange</span><span class="java8">(</span><span class="java10">PropertyChangeEvent ev</span><span class="java8">)<br />
+{</span><br />
+<span class="onEDT">&#xA0; <span class="java10">label.setText</span><span class="java8">((</span><span class="java10">String</span><span class="java8">)</span><span class="java10">ev.getNewValue</span><span class="java8">())</span><span class="java10">;</span></span><br />
+<span class="java8">}</span>
+<br />&#xA0;</code></div>
 
+<!--
+public String getValue()
+{
+  String value;
   // extensive calculation
-  
   return value;
-</span>}
+}
 
 public void setValue(String value)
-{<span class="offEDT">
+{
   this.value = value;
   firePropertyChange(value);
-</span>}
-</pre>
-          </td>
-        </tr>
-      </table>
+}
+-->
+<div class="java right">
+<h3 class="java">BeanImpl.java</h3>
+<code class="java"><span class="java4">public </span><span class="java10">String getValue</span><span class="java8">()<br />
+{</span><br />
+<span class="offEDT">&#xA0; <span class="java10">String value;<br />
+&#xA0; </span><span class="java3">// extensive calculation<br />
+&#xA0; </span><span class="java4">return </span><span class="java10">value;</span></span><br />
+<span class="java8">}<br />
+<br />
+</span><span class="java4">public </span><span class="java9">void </span><span class="java10">setValue</span><span class="java8">(</span><span class="java10">String value</span><span class="java8">)<br />
+{</span><br />
+<span class="offEDT">&#xA0; <span class="java4">this</span><span class="java10">.value = value;<br />
+&#xA0; firePropertyChange</span><span class="java8">(</span><span class="java10">value</span><span class="java8">)</span><span class="java10">;</span></span><br />
+<span class="java8">}</span></code></div>
+
+<div class="clear"/>
+
       <p>
-        Hey wait a minute! It's the same code as shown in the <a href="problem.html#Standard Swing">standard table</a>. But the colors have changed - the GUI is completely <span class="onEDT">green</span> and the bean is <span class="red">red</span> - how can this be?
+        Hey wait a minute! It's the same code as shown in the previous section <a href="problem.html#Standard Swing">Standard Swing</a>. But the colors have changed - <code>GUI.java</code> is <span class="onEDT">completely green</span> and <code>BeanImpl.java</code> is <span class="offEDT">completely red</span> - how can this be?
       </p>
       <p>
-        <em>Spin</em> makes this solution possible - as you can see with no impact on the old code. An invisible column in the middle handles all threading issues transparently.<br/>
-        All we have to do is to <em>spin-off</em> the bean from the EDT. For this we wrap the bean in an instance of type <code>Spin</code>. The result can safely be casted to any interface the bean (or one of its superclasses) implements. The best place to do this is before a reference to this bean is passed to a GUI component (why bother the programmer of the GUI with this little detail):
+        <em>Spin</em> makes this solution possible - as you can see with no impact on the old code. An invisible layer between these two classes handles all threading issues transparently.<br/>
+        All we have to do is to <em>spin-off</em> the bean from the <acronym title="Event Dispatch Thread">EDT</acronym>. For this we wrap the bean in an instance of type <code>Spin</code>. The result can safely be casted to any interface the bean (or one of its superclasses) implements. The best place to do this is before a reference to this bean is passed to a <acronym title="Graphical user interface">GUI</acronym> component (why bother the programmer of the <acronym title="Graphical user interface">GUI</acronym> with this little detail):
       </p>
-<pre>
-  bean = (Bean)Spin.off(bean);
-</pre>
+      <blockquote>
+        <code>bean = (Bean)Spin.off(bean);</code>
+      </blockquote>
       <p>   
-        The only restriction here is that the Bean has to be broken into interface and implementation. The GUI components will only use the interface! The following picture shows how <em>Spin</em> connects the GUI and the bean. Calls on the EDT from the GUI to the bean are brokered to other threads invocating the beans functionality:
+        The only restriction here is that the Bean has to be broken into interface and implementation. The <acronym title="Graphical user interface">GUI</acronym> components will only use the interface! The following picture shows how <em>Spin</em> connects the <acronym title="Graphical user interface">GUI</acronym> and the bean. Calls on the <acronym title="Event Dispatch Thread">EDT</acronym> from the <acronym title="Graphical user interface">GUI</acronym> to the bean are brokered to other threads invocating the beans functionality:
         
         <span class="centeredImage">  
           <img src="images/spinoff.gif" alt="Spin off"/>
@@ -71,22 +87,22 @@ public void setValue(String value)
       </p>
       <p>
         The need for an interface isn't really a restriction:
-        <ul>
-          <li>
-            It is generally recommended to separate an application in different layers which communicate through well defined interfaces. The GUI of an application is certainly part of another layer than extensive calculations or I/O operations.
-          </li>
-          <li>
-            If you don't want to or are unable to use an interface you can <a href="acknowledgement.html#CGLib">utilize CGLib instead of JDK proxies</a>.
-          </li>
-        </ul>
       </p>
+      <ul>
+        <li>
+          It is generally recommended to separate an application in different layers which communicate through well defined interfaces. The <acronym title="Graphical user interface">GUI</acronym> of an application is certainly part of another layer than extensive calculations or I/O operations.
+        </li>
+        <li>
+          If you don't want to or are unable to use an interface you can <a href="acknowledgement.html#CGLib">utilize CGLib instead of JDK proxies</a>.
+        </li>
+      </ul>
       <p>
         For the notification of changes to the bean we use an inverse technique.<br/>
-        We must <em>spin-over</em> any invocation of a GUI callback-method on another thread to the EDT. This time we wrap the GUI in a <code>Spin</code> instance assuming that the bean allows for an <code>PropertyChangeListener</code> to be added as a callback (this could be any interface like foo.DataChangedListener):
+        We must <em>spin-over</em> any invocation of a <acronym title="Graphical user interface">GUI</acronym> callback-method on another thread to the <acronym title="Event Dispatch Thread">EDT</acronym>. This time we wrap the <acronym title="Graphical user interface">GUI</acronym> in a <code>Spin</code> instance assuming that the bean allows for an <code>PropertyChangeListener</code> to be added as a callback (this could be any interface like foo.DataChangedListener):
       </p>
-<pre>
-  bean.addPropertyChangeListener((PropertyChangeListener)Spin.over(gui);
-</pre>
+      <blockquote>
+        <code>bean.addPropertyChangeListener((PropertyChangeListener)Spin.over(gui);</code>
+      </blockquote>
       <p>  
         <span class="centeredImage">  
           <img src="images/spinover.gif" alt="Spin over"/>
@@ -98,18 +114,18 @@ public void setValue(String value)
     </subsection>
     <subsection name="Internals">
       <p>
-        <em>Spin</em> is built on top of virtual proxies and a technique borrowed from the java.awt.Dialog component. While a modal dialog has to wait for user input, the EDT is rerouted to the swing event processing to handle further events.
+        <em>Spin</em> is built on top of virtual proxies and a technique borrowed from the java.awt.Dialog component. While a modal dialog has to wait for user input, the <acronym title="Event Dispatch Thread">EDT</acronym> is rerouted to the swing event processing to handle further events.
       </p>
       <p>
         The following diagram shows how this is used in <em>Spin</em>. Each invocation of a bean's method is intercepted and handled by a    <a href="./apidocs/spin/off/SpinOffEvaluator.html">SpinOffEvaluator</a>:<br/>
-        getValue() is evaluated asynchronously on another thread (customizable with a <a href="./apidocs/spin/off/Starter.html">Starter</a>) while Swing events are    dispatched through a <a href="./apidocs/spin/off/Dispatcher.html">Dispatcher</a>. Once the call to the bean returns the dispatching of events is stopped and the EDT is free to return to the standard event processing: 
+        getValue() is evaluated asynchronously on another thread (customizable with a <a href="./apidocs/spin/off/Starter.html">Starter</a>) while Swing events are dispatched through a <a href="./apidocs/spin/off/Dispatcher.html">Dispatcher</a>. Once the call to the bean returns the dispatching of events is stopped and the <acronym title="Event Dispatch Thread">EDT</acronym> is free to return to the standard event processing: 
 
         <span class="centeredImage">  
           <img src="images/sequencespinoff.gif" alt="Spin off sequence"/>
         </span>
       </p>
       <p>
-        For asynchronous notifications from the bean to the GUI we reuse the technique introduced in the previous sections. But this time the call to <code>invokeAndWait()</code> is encapsulated by <em>Spin</em> with a <a href="./apidocs/spin/over/SpinOverEvaluator.html">SpinOverEvaluator</a>:
+        For asynchronous notifications from the bean to the <acronym title="Graphical user interface">GUI</acronym> we reuse the technique introduced in the previous sections. But this time the call to <code>invokeAndWait()</code> is encapsulated by <em>Spin</em> with a <a href="./apidocs/spin/over/SpinOverEvaluator.html">SpinOverEvaluator</a>:
 
         <span class="centeredImage">  
         <img src="images/sequencespinover.gif" alt="Spin over sequence"/>
@@ -131,17 +147,17 @@ public void setValue(String value)
         </dd>
         <dt>Reference backdoor</dt>
         <dd>
-          If your GUI hands over references to parts of its swing models (e.g. TreeModel, TableModel) in method calls to your bean, these could possibly be altered on another thread than the EDT thus VIOLATING THE SWING SINGLE THREADING RULE.
+          If your <acronym title="Graphical user interface">GUI</acronym> hands over references to parts of its swing models (e.g. TreeModel, TableModel) in method calls to your bean, these could possibly be altered on another thread than the <acronym title="Event Dispatch Thread">EDT</acronym> thus VIOLATING THE SWING SINGLE THREADING RULE.
         </dd>
         <dt>Bean threadsafety</dt>
         <dd>
-          If your GUI doesn't disable all further actions while an invocation on your bean is being processed, the event dispatching may cause a second concurrent call to the bean. In cases where this is desired the BEAN MUST BE THREADSAFE.
+          If your <acronym title="Graphical user interface">GUI</acronym> doesn't disable all further actions while an invocation on your bean is being processed, the event dispatching may cause a second concurrent call to the bean. In cases where this is desired the BEAN MUST BE THREADSAFE.
         </dd>
         <dt>Asynchronous<a name="asynchronous"/></dt>
         <dd>
-          Whenever your GUI calls a beans method through <em>Spin</em>, further actions should be allowed only if they are related to the current <em>Spin</em> invocation. This includes <code>Cancel</code> functionality and the retrieval of the current state of invocation or intermediate results (e.g. for updating a progress bar or incremental filling of a table).<br/>
+          Whenever your <acronym title="Graphical user interface">GUI</acronym> calls a beans method through <em>Spin</em>, further actions should be allowed only if they are related to the current <em>Spin</em> invocation. This includes <code>Cancel</code> functionality and the retrieval of the current state of invocation or intermediate results (e.g. for updating a progress bar or incremental filling of a table).<br/>
           You're running into problems if you're using <em>Spin</em> for real asynchronous executions. Let me give an example:<br/>
-          File tranfers of an Explorer-like application wich can be arbitrarily started and stopped while others are independently continuing are NOT A RECOMMENDED USAGE for <em>Spin</em>. Nevertheless <em>Spin</em> can be used to <em>spin-over</em> events from the transfers (e.g. completion notification) to the EDT.
+          File tranfers of an Explorer-like application wich can be arbitrarily started and stopped while others are independently continuing are NOT A RECOMMENDED USAGE for <em>Spin</em>. Nevertheless <em>Spin</em> can be used to <em>spin-over</em> events from the transfers (e.g. completion notification) to the <acronym title="Event Dispatch Thread">EDT</acronym>.
         </dd>
         <dt>Incomplete Event Handling</dt>
         <dd>
@@ -154,7 +170,7 @@ public void setValue(String value)
     </subsection>    
     <subsection name="Conclusion">
       <p>
-        <em>Spin</em> is a small library that concentrates on offering a powerful solution to build non-freezing Swing applications. <em>Spin</em> enforces good application design by separating the GUI and non-visual components through interfaces. If it is used wisely in an application framework, the GUI programmers will never have to think about threads again.
+        <em>Spin</em> is a small library that concentrates on offering a powerful solution to build non-freezing Swing applications. <em>Spin</em> enforces good application design by separating the <acronym title="Graphical user interface">GUI</acronym> and non-visual components through interfaces. If it is used wisely in an application framework, the <acronym title="Graphical user interface">GUI</acronym> programmers will never have to think about threads again.
       </p>
       <p>  
         <em>Spin</em> comes with several demonstration classes that show how to solve formerly challenging Swing programming problems with ease:
@@ -171,7 +187,7 @@ public void setValue(String value)
         <li>spin.demo.dispatcher.DispatcherGUI - test different dispatchers</li>
       </ul>   
       <p>  
-        We have used <em>Spin</em> successfully in several projects to wrap all remote communication (RMI) between rich-clients and the application server.
+        We have successfully used <em>Spin</em> successfully in several projects to wrap all remote communication (RMI) between rich-clients and the application server.
       </p>
     </subsection>
   </section>
