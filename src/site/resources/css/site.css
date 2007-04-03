@@ -50,8 +50,8 @@ h3.java {
 
 code.java {
   display: block;
-  overflow: hidden;
-  border-left: 1em solid #ece9d8;
+  width: 100%;
+  overflow: scroll;
   line-height: 13px;
   white-space: nowrap;
 }
