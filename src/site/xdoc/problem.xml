@@ -36,7 +36,7 @@ public void propertyChange(PropertyChangeEvent ev)
   label.setText((String)ev.getNewValue());
 }
 -->
-<div class="java left">
+<div class="java gui">
 <h3 class="java">GUI.java</h3>
 <code class="java"><span class="java4">public </span><span class="java9">void </span><span class="java10">actionPerformed</span><span class="java8">(</span><span class="java10">ActionEvent e</span><span class="java8">)<br />
 {<br />
@@ -65,7 +65,7 @@ public void setValue(String value)
   firePropertyChange(value);
 }
 -->
-<div class="java right">
+<div class="java bean">
 <h3 class="java">BeanImpl.java</h3>
 <code class="java"><span class="java4">public </span><span class="java10">String getValue</span><span class="java8">()<br />
 {<br />
@@ -126,7 +126,7 @@ public void propertyChange(final PropertyChangeEvent ev)
   });
 }
 -->
-<div class="java left">
+<div class="java gui">
 <h3 class="java">GUI.java</h3>
 <code class="java"><span class="java4">public </span><span class="java9">void </span><span class="java10">actionPerformed</span><span class="java8">(</span><span class="java10">ActionEvent e</span><span class="java8">)<br />
 {<br />
@@ -172,7 +172,7 @@ public void setValue(String value)
   firePropertyChange(value);
 }
 -->
-<div class="java right">
+<div class="java bean">
 <h3 class="java">BeanImpl.java</h3>
 <code class="java"><span class="java4">public </span><span class="java10">String getValue</span><span class="java8">()<br />
 {</span><br />
@@ -252,7 +252,7 @@ public void propertyChange(final PropertyChangeEvent ev)
   });
 }
 -->
-<div class="java left">
+<div class="java gui">
 <h3 class="java">GUI.java</h3>
 <code class="java"><span class="java4">public </span><span class="java9">void </span><span class="java10">actionPerformed</span><span class="java8">(</span><span class="java10">ActionEvent e</span><span class="java8">)<br />
 {</span><br />
@@ -296,7 +296,7 @@ public void setValue(String value)
   firePropertyChange(value);
 }
 -->
-<div class="java right">
+<div class="java bean">
 <h3 class="java">BeanImpl.java</h3>
 <code class="java"><span class="java4">public </span><span class="java10">String getValue</span><span class="java8">()<br />
 {</span><br />

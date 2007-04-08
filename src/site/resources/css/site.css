@@ -25,12 +25,12 @@ div.java {
   line-height: 100%;
 }
 
-div.left {
+div.gui {
   float: left;
   width: 48%;
 }
 
-div.right {
+div.bean {
   float: right;
   width: 48%;
 }
