@@ -46,9 +46,9 @@
   </mailingLists>
    
   <scm>
-    <connection>scm:pserver:anonymous@spin.cvs.sourceforge.net:/cvsroot/spin</connection>
-    <developerConnection>scm:extssh:spin.cvs.sourceforge.net:/cvsroot/spin</developerConnection>
-    <url>http://spin.cvs.sourceforge.net/spin/</url>
+    <connection>scm:http://spin.svn.sourceforge.net/svnroot/spin/trunk</connection>
+    <developerConnection>scm:https://spin.svn.sourceforge.net/svnroot/spin/trunk</developerConnection>
+    <url>http://spin.svn.sourceforge.net/viewvc/spin/trunk</url>
   </scm> 
    
   <dependencies>
