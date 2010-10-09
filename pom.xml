@@ -162,5 +162,9 @@
       <id>spin-repo</id>
       <url>svn:https://spin.svn.sourceforge.net/svnroot/spin/repo</url>
     </repository>
+    <site>
+      <id>spin-site</id>
+      <url>scp://shell.sourceforge.net/home/groups/s/sp/spin/htdocs</url>
+    </site>
   </distributionManagement>
 </project>
